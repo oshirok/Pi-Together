@@ -1,0 +1,11 @@
+extends layout
+
+block extraHeader
+	script(src='javascripts/decimal.js')
+	script(src='https://code.jquery.com/jquery-2.1.4.js')
+
+block content
+	h1= title
+	p Welcome to #{title}
+	script(type='text/javascript').
+		#{script}
