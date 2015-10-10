@@ -31,7 +31,7 @@ function piScript(lo, hi, precis) {
 }
 
 var num = 0;
-var max = 500;
+var max = 1000;
 var increment = 10;
 var startTime = null;
 var endTime = null;
