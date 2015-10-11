@@ -41,25 +41,33 @@ var hi = 0;
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-	  res.render('index', { title: 'Express' });
+	res.render('index', { title: 'Express' });
 });
 
 router.get('/worker', function(req, res, next) {
+    res.render('worker', { title: 'Express'});
+});
+
+router.get('/work', function(req, res, next) {
 	if(!startTime) startTime = new Date();
 	if (num < max) {
-		var script = piScript(num, num + increment, max);
-    	res.render('worker', { title: 'Express', script: script });
+		var progress = Math.round(100 * num / max);
+    	res.setHeader('Content-Type', 'application/json');
+    	res.send(JSON.stringify({isComplete: false, jobId: num, progress: progress, params: {lo: num, hi: num + increment, precis: max}}));
+		num += increment;
 	} else {
 		if (!endTime) {
 			endTime = new Date();
 			console.log("RESULT: " + pi.toFixed(max));
 		}
-		res.render('index', { title: 'DONE! time: ' + (endTime - startTime)});
+		res.setHeader('Content-Type', 'application/json');
+    	res.send(JSON.stringify({isComplete: true}));
 	}
 	num += increment;
 });
 
-router.post('/worker', function(req, res, next) {
+router.post('/work', function(req, res, next) {
+	var jobId = req.body.jobId;
 	var result = new Decimal(req.body.data);
 	pi = pi.plus(result);
 	res.send(200);
