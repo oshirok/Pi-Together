@@ -32,12 +32,13 @@ function piScript(lo, hi, precis) {
 
 var num = 0;
 var max = 1000;
-var increment = 10;
+var increment = 25;
 var startTime = null;
 var endTime = null;
 var pi = new Decimal(0);
 Decimal.config({ precision: max, rounding: 4 });
 var hi = 0;
+var jobs = {};
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -53,8 +54,15 @@ router.get('/work', function(req, res, next) {
 	if (num < max) {
 		var progress = Math.round(100 * num / max);
     	res.setHeader('Content-Type', 'application/json');
-    	res.send(JSON.stringify({isComplete: false, jobId: num, progress: progress, params: {lo: num, hi: num + increment, precis: max}}));
+    	var job = JSON.stringify({isComplete: false, id: num, progress: progress, params: {lo: num, hi: num + increment, precis: max}});
+    	res.send(job);
+		jobs[num+""] = job;
 		num += increment;
+	} else if (Object.keys(jobs).length > 0){
+		var keys = Object.keys(jobs);
+  		var job = jobs[keys[Math.floor(keys.length * Math.random())]];
+  		res.setHeader('Content-Type', 'application/json');
+  		res.send(job);
 	} else {
 		if (!endTime) {
 			endTime = new Date();
@@ -63,12 +71,15 @@ router.get('/work', function(req, res, next) {
 		res.setHeader('Content-Type', 'application/json');
     	res.send(JSON.stringify({isComplete: true}));
 	}
-	num += increment;
 });
 
 router.post('/work', function(req, res, next) {
-	var jobId = req.body.jobId;
+	var jobId = req.body.id;
+	console.log("DELETING JOB ID: " + jobId);
+	delete jobs[jobId+""];
+	console.log(Object.keys(jobs));
 	var result = new Decimal(req.body.data);
+	console.log("RECIEVED: " + result);
 	pi = pi.plus(result);
 	res.send(200);
 });
