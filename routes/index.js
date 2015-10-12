@@ -76,12 +76,14 @@ router.get('/work', function(req, res, next) {
 router.post('/work', function(req, res, next) {
 	var jobId = req.body.id;
 	console.log("DELETING JOB ID: " + jobId);
-	delete jobs[jobId+""];
-	console.log(Object.keys(jobs));
-	var result = new Decimal(req.body.data);
-	console.log("RECIEVED: " + result);
-	pi = pi.plus(result);
-	res.send(200);
+	if(jobs[jobId+""]) {
+		delete jobs[jobId+""];
+		console.log(Object.keys(jobs));
+		var result = new Decimal(req.body.data);
+		console.log("RECIEVED: " + result);
+		pi = pi.plus(result);
+		res.send(200);
+	}
 });
 
 module.exports = router;
