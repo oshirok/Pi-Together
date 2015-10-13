@@ -44,7 +44,8 @@ piTogether.controller("mainController",function($scope,$http){
               console.log('Error: ' + data);
           });
   };
-  $scope.getWork();
+  // $scope.getWork();
+  var worker = new Worker('javascripts/worker.js');
 });
 
 function mainController($scope, $http) {
