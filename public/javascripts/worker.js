@@ -20,7 +20,9 @@ var ajax = function(url, data, callback, type) {
   }
   data_string = data_array.join("&");
   req = new XMLHttpRequest();
-  req.open(type, url, false);
+  // Set this to true to make it async
+  // Which somehow fixed my issue?
+  req.open(type, url, true);
   req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
   req.onreadystatechange = function() {
     if (req.readyState === 4 && req.status === 200) {
@@ -49,13 +51,19 @@ function ballard(lo, hi, precis) {
   return pi2.toFixed(precis);
 }
 
+// Create the event
+
 var getWork = function() {
   ajax("/work", null, function(data) {
     //do something with the data like:
     var currentJob = JSON.parse(data);
+    self.postMessage({'progress': currentJob.progress});
+    if(currentJob.isComplete) {
+      self.close();
+    }
     var result = ballard(currentJob.params.lo, currentJob.params.hi, currentJob.params.precis);
     ajax("/work", {data: result, id: currentJob.id}, function(data) {
-      console.log('successful post!');
+      // console.log('successful post!');
       getWork();
     }, 'POST');
   }, 'GET');

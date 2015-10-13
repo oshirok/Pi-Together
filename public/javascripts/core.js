@@ -19,7 +19,11 @@ function ballard(lo, hi, precis) {
   return pi2.toFixed(precis);
 }
 
+
 piTogether.controller("mainController",function($scope,$http){
+
+  $scope.progress = 50;
+
   // delete a todo after checking it
   $scope.getWork = function() {
     $http.get('/work')
@@ -46,6 +50,33 @@ piTogether.controller("mainController",function($scope,$http){
   };
   // $scope.getWork();
   var worker = new Worker('javascripts/worker.js');
+  var worker2 = new Worker('javascripts/worker.js');
+  var worker3 = new Worker('javascripts/worker.js');
+  var worker4 = new Worker('javascripts/worker.js');
+
+  worker.addEventListener('message', function(e) {
+    $scope.progress = e.data.progress;
+    console.log($scope.progress);
+    $scope.$apply();
+  }, false);
+
+  worker2.addEventListener('message', function(e) {
+    $scope.progress = e.data.progress;
+    console.log($scope.progress);
+    $scope.$apply();
+  }, false);
+
+  worker3.addEventListener('message', function(e) {
+    $scope.progress = e.data.progress;
+    console.log($scope.progress);
+    $scope.$apply();
+  }, false);
+
+  worker4.addEventListener('message', function(e) {
+    $scope.progress = e.data.progress;
+    console.log($scope.progress);
+    $scope.$apply();
+  }, false);
 });
 
 function mainController($scope, $http) {

@@ -14,9 +14,9 @@ function verify(calculatedPi) {
 
 // Setup step
 var num = 0;
-var max = 333; // number of iterations
+var max = 1000; // number of iterations
 var precision = 1000; // number of places to calculate for
-var increment = 1;
+var increment = 5;
 var startTime = null;
 var endTime = null;
 // Pi starts at 0
@@ -57,7 +57,7 @@ router.get('/work', function(req, res, next) {
 			console.log("RESULT: " + pi.toFixed(precision));
 		}
 		res.setHeader('Content-Type', 'application/json');
-    	res.send(JSON.stringify({isComplete: true}));
+    	res.send(JSON.stringify({isComplete: true, progress: 100}));
 	}
 });
 
