@@ -40,7 +40,7 @@ router.get('/worker', function(req, res, next) {
 router.get('/work', function(req, res, next) {
 	if(!startTime) startTime = new Date();
 	if (num < max) {
-		var progress = Math.round(100 * num / max);
+		var progress = Math.round(100 * num / max) - Object.keys(jobs).length;
     	res.setHeader('Content-Type', 'application/json');
     	var job = JSON.stringify({isComplete: false, id: num, progress: progress, params: {lo: num, hi: num + increment, precis: precision}});
     	res.send(job);
@@ -49,6 +49,7 @@ router.get('/work', function(req, res, next) {
 	} else if (Object.keys(jobs).length > 0){
 		var keys = Object.keys(jobs);
   		var job = jobs[keys[Math.floor(keys.length * Math.random())]];
+  		// We must update the progress
   		res.setHeader('Content-Type', 'application/json');
   		res.send(job);
 	} else {
