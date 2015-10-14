@@ -14,9 +14,10 @@ function verify(calculatedPi) {
 
 // Setup step
 var num = 0;
-var max = 333; // number of iterations
-var precision = 1000; // number of places to calculate for
-var increment = 5;
+var max = 350; // number of iterations
+var DIGITS_PER_ITERATION  = 14.1816474627254776555
+var precision = Math.floor(max * DIGITS_PER_ITERATION); // number of places to calculate for
+var increment = 175;
 var startTime = null;
 var endTime = null;
 // Pi starts at 0
@@ -67,6 +68,7 @@ router.get('/work', function(req, res, next) {
 // Processes and reduces the result of a calculation
 router.post('/work', function(req, res, next) {
 	var jobId = req.body.id;
+	console.log(req.body.data);
 	// console.log("DELETING JOB ID: " + jobId);
 	if(jobs[jobId+""]) {
 		// Deletes the job from the job dictionary when completing the calculation
