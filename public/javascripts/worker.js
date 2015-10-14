@@ -51,6 +51,30 @@ function ballard(lo, hi, precis) {
   return pi2.toFixed(precis);
 }
 
+// We can optimize this further I think
+function factorial(base) {
+  var result = new Decimal(1);
+  while(base > 0) {
+    result = result.times(base);
+    base = base - 1;
+  }
+  return result;
+}
+
+// This only takes care of the summation step!
+function chudnovsky(lo, hi, precis) {
+  Decimal.config({ precision: precis, rounding: 4 });
+  var result = new Decimal(0);
+  var k =　lo;
+  while(k < hi) {
+    var numer = factorial(new Decimal(6).times(k)).times(new Decimal(13591409).plus(new Decimal(545140134).times(k)));
+    var denom = factorial(new Decimal(3).times(k)).times(factorial(k).pow(3)).times(new Decimal(-640320).pow(new Decimal(3).times(k)));
+    result = result.plus(numer.div(denom));
+    k++;
+  }
+  return result;
+}
+
 // Create the event
 
 var getWork = function() {
@@ -61,7 +85,7 @@ var getWork = function() {
     if(currentJob.isComplete) {
       self.close();
     }
-    var result = ballard(currentJob.params.lo, currentJob.params.hi, currentJob.params.precis);
+    var result = chudnovsky(currentJob.params.lo, currentJob.params.hi, currentJob.params.precis);
     ajax("/work", {data: result, id: currentJob.id}, function(data) {
       // console.log('successful post!');
       getWork();

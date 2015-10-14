@@ -14,7 +14,7 @@ function verify(calculatedPi) {
 
 // Setup step
 var num = 0;
-var max = 1000; // number of iterations
+var max = 333; // number of iterations
 var precision = 1000; // number of places to calculate for
 var increment = 5;
 var startTime = null;
@@ -55,6 +55,7 @@ router.get('/work', function(req, res, next) {
 	} else {
 		if (!endTime) {
 			endTime = new Date();
+			pi = new Decimal(426880).times(new Decimal(10005).sqrt()).div(pi);
 			console.log("RESULT: " + pi.toFixed(precision));
 		}
 		res.setHeader('Content-Type', 'application/json');
