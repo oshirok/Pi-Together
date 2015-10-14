@@ -57,6 +57,7 @@ router.get('/work', function(req, res, next) {
 			endTime = new Date();
 			pi = new Decimal(426880).times(new Decimal(10005).sqrt()).div(pi);
 			console.log("RESULT: " + pi.toFixed(precision));
+			console.log("Correct digits: " + verify(""+pi));
 		}
 		res.setHeader('Content-Type', 'application/json');
     	res.send(JSON.stringify({isComplete: true, progress: 100}));
@@ -73,7 +74,6 @@ router.post('/work', function(req, res, next) {
 		// This is the REDUCE step
 		var result = new Decimal(req.body.data);
 		pi = pi.plus(result);
-		console.log("Correct digits: " + verify(""+pi));
 		res.send(200);
 	}
 });
