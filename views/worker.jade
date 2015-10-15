@@ -14,6 +14,11 @@ html(ng-app = "piTogether")
 		div(class="container" ng-controller="mainController")
 			div(class="jumbotron text-center")
 				h1 Pi Calculation
-				p Welcome to #{title}
+				p We are calculating pi
 				uib-progressbar(class="progress-striped active" animate="false" value="progress")
 					b {{progress}}%
+			div(class="container" ng-show="result" style="word-wrap: break-word;")
+				h1 Result
+				p Pi is {{result.result}}
+				p Time: {{result.time}}
+				p Accuracy is {{result.digits}}

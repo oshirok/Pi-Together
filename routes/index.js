@@ -20,6 +20,7 @@ var precision = Math.floor(max * DIGITS_PER_ITERATION); // number of places to c
 var increment = 5;
 var startTime = null;
 var endTime = null;
+var result = {};
 // Pi starts at 0
 var pi = new Decimal(0);
 Decimal.config({ precision: precision, rounding: 4 });
@@ -35,6 +36,12 @@ router.get('/', function(req, res, next) {
 // GET worker page
 router.get('/worker', function(req, res, next) {
     res.render('worker', { title: 'Express'});
+});
+
+// GET command to reset... BUT THIS IS BAD PRACTICE!
+router.get('/worker', function(req, res, next) {
+	num = 0;
+    res.send(200);
 });
 
 //　Serves a JSON with the work parameters
@@ -57,12 +64,15 @@ router.get('/work', function(req, res, next) {
 		if (!endTime) {
 			endTime = new Date();
 			pi = new Decimal(426880).times(new Decimal(10005).sqrt()).div(pi);
-			console.log("RESULT: " + pi.toFixed(precision));
-			console.log("Correct digits: " + verify(""+pi));
-			console.log("Time: " + (endTime - startTime));
+			result.result = pi.toFixed(precision);
+			result.digits = verify("" + pi);
+			result.time = endTime - startTime;
+			console.log("RESULT: " + result.result);
+			console.log("Correct digits: " + result.digits);
+			console.log("Time: " + (result.time));
 		}
 		res.setHeader('Content-Type', 'application/json');
-    	res.send(JSON.stringify({isComplete: true, progress: 100}));
+    	res.send(JSON.stringify({isComplete: true, progress: 100, result: result}));
 	}
 });
 

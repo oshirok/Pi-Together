@@ -4,6 +4,7 @@ var piTogether = angular.module('piTogether', ['ui.bootstrap']);
 piTogether.controller("mainController",function($scope,$http){
 
   $scope.progress = 0;
+  $scope.result = null;
 
   var numberOfCores = navigator.hardwareConcurrency || 2;
   console.log("number of cores determined: " + numberOfCores);
@@ -13,8 +14,14 @@ piTogether.controller("mainController",function($scope,$http){
     var worker = new Worker('javascripts/worker.js');
 
     worker.addEventListener('message', function(e) {
-      $scope.progress = e.data.progress;
+      if(e.data.progress) {
+        $scope.progress = e.data.progress;
+      }
       // console.log($scope.progress);
+      if(e.data.result) {
+        console.log("COMPLETE");
+        $scope.result = e.data.result;
+      }
       $scope.$apply();
     }, false);
 

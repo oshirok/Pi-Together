@@ -83,13 +83,16 @@ var getWork = function() {
     var currentJob = JSON.parse(data);
     self.postMessage({'progress': currentJob.progress});
     if(currentJob.isComplete) {
+      self.postMessage({'result': currentJob.result});
       self.close();
+    } else {
+      var result = chudnovsky(currentJob.params.lo, currentJob.params.hi, currentJob.params.precis);
+      ajax("/work", {data: result, id: currentJob.id}, function(data) {
+        // console.log('successful post!');
+        getWork();
+      }, 'POST');
+
     }
-    var result = chudnovsky(currentJob.params.lo, currentJob.params.hi, currentJob.params.precis);
-    ajax("/work", {data: result, id: currentJob.id}, function(data) {
-      // console.log('successful post!');
-      getWork();
-    }, 'POST');
   }, 'GET');
 }
 
