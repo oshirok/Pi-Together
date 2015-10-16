@@ -1,16 +1,16 @@
 // public/core.js
 var piTogether = angular.module('piTogether', ['ui.bootstrap']);
 
-piTogether.controller("mainController",function($scope,$http,$routeParams){
+piTogether.controller("mainController",function($scope,$http,$location){
 
   $scope.progress = 0;
   $scope.result = null;
 
 
 
-  var numberOfCores = navigator.hardwareConcurrency || $routeParams.threads || 2;
+  var numberOfCores = $location.search().threads || navigator.hardwareConcurrency || 2;
   console.log("number of cores determined: " + numberOfCores);
-
+  console.log($location.search());
   var workers = [];
   for(var i = 0; i < numberOfCores; i++) {
     var worker = new Worker('javascripts/worker.js');
