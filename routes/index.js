@@ -33,6 +33,16 @@ router.get('/', function(req, res, next) {
 	res.render('index', { title: 'Express' });
 });
 
+/* GET home page. */
+router.get('/reset', function(req, res, next) {
+	num = 0;
+	startTime = null;
+	endTime = null;
+	result = {};
+	pi = new Decimal(0);
+	res.send('ok!');
+});
+
 // GET worker page
 router.get('/worker', function(req, res, next) {
     res.render('worker', { title: 'Express'});
