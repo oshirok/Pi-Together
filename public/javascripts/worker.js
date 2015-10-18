@@ -1,6 +1,7 @@
 importScripts('decimal.js');
 
 // Source, taken from http://stackoverflow.com/questions/20663353/is-it-feasible-to-do-an-ajax-request-from-a-web-worker
+// Used to send get and post requests
 var ajax = function(url, data, callback, type) {
   var data_array, data_string, idx, req, value;
   if (data == null) {
@@ -33,6 +34,9 @@ var ajax = function(url, data, callback, type) {
   return req;
 };
 
+// bellards formula for calculating Pi
+// Can calculate any arbitrary digit but slower at calculating sequential digits
+// then chudnovsky's formula. I expect to use this to verify digits
 function ballard(lo, hi, precis) {
   Decimal.config({ precision: precis, rounding: 4 });
     var pi2 = new Decimal(0);
@@ -61,7 +65,8 @@ function factorial(base) {
   return result;
 }
 
-// This only takes care of the summation step!
+// This only takes care of the summation step of Chudnovsky's formula
+// It is comparitively faster at calculating Pi than Bellard's formula
 function chudnovsky(lo, hi, precis) {
   Decimal.config({ precision: precis, rounding: 4 });
   var result = new Decimal(0);
@@ -75,8 +80,9 @@ function chudnovsky(lo, hi, precis) {
   return result;
 }
 
-// Create the event
-
+// This is the main method of this 'class'
+// It sends calculates one iteration, sends it to the server to reduce
+// and then retrieves another job from the server
 var getWork = function() {
   ajax("/work", null, function(data) {
     //do something with the data like:
@@ -96,5 +102,6 @@ var getWork = function() {
   }, 'GET');
 }
 
+// Running the main function on launch
 getWork();
 

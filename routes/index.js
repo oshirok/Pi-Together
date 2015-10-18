@@ -28,12 +28,13 @@ var hi = 0;
 // The Dictionary used to keep track of active jobs
 var jobs = {};
 
-/* GET home page. */
+/* GET home page. THIS DOES NOTHING*/
 router.get('/', function(req, res, next) {
 	res.render('index', { title: 'Express' });
 });
 
-/* GET home page. */
+/* Resets the state of the server. This is bad convention but
+ * I use it as a shortcut to reset the state. */
 router.get('/reset', function(req, res, next) {
 	num = 0;
 	startTime = null;
@@ -44,14 +45,9 @@ router.get('/reset', function(req, res, next) {
 });
 
 // GET worker page
+// Loads the angular worker in the client
 router.get('/worker', function(req, res, next) {
     res.render('worker', { title: 'Express'});
-});
-
-// GET command to reset... BUT THIS IS BAD PRACTICE!
-router.get('/worker', function(req, res, next) {
-	num = 0;
-    res.send(200);
 });
 
 //　Serves a JSON with the work parameters
