@@ -24,7 +24,6 @@ var result = {};
 // Pi starts at 0
 var pi = new Decimal(0);
 Decimal.config({ precision: precision, rounding: 4 });
-var hi = 0;
 // The Dictionary used to keep track of active jobs
 var jobs = {};
 
@@ -85,7 +84,6 @@ router.get('/work', function(req, res, next) {
 // Processes and reduces the result of a calculation
 router.post('/work', function(req, res, next) {
 	var jobId = req.body.id;
-	// console.log("DELETING JOB ID: " + jobId);
 	if(jobs[jobId+""]) {
 		// Deletes the job from the job dictionary when completing the calculation
 		delete jobs[jobId+""];
