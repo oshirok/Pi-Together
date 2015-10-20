@@ -56,28 +56,41 @@ function ballard(lo, hi, precis) {
 }
 
 // We can optimize this further I think
-function factorial(base) {
+function factorial(base, hint) {
+  var lo;
   var result = new Decimal(1);
-  while(base > 0) {
-    result = result.times(base);
-    base = base - 1;
+  if(hint && hint.iteration < base) {
+    lo = hint.iteration;
+    result = new Decimal(hint.data);
+  } else {
+    lo = 1;
+  }
+  // Start at 1 because multiplying by 0 is not good
+  for(var i = lo; i <= base; i++) {
+    result = result.times(i);
   }
   return result;
 }
 
 // This only takes care of the summation step of Chudnovsky's formula
 // It is comparitively faster at calculating Pi than Bellard's formula
-function chudnovsky(lo, hi, precis) {
+function chudnovsky(lo, hi, precis, hints) {
   Decimal.config({ precision: precis, rounding: 4 });
   var result = new Decimal(0);
   var k =　lo;
+  var hint1 = null;
+  var hint2 = null;
+  var hint3 = null;
   while(k < hi) {
-    var numer = factorial(new Decimal(6).times(k)).times(new Decimal(13591409).plus(new Decimal(545140134).times(k)));
-    var denom = factorial(new Decimal(3).times(k)).times(factorial(k).pow(3)).times(new Decimal(-640320).pow(new Decimal(3).times(k)));
+    var fac1 = factorial(new Decimal(6).times(k), hint1);
+    var numer = fac1.times(new Decimal(13591409).plus(new Decimal(545140134).times(k)));
+    var fac2 = factorial(new Decimal(3).times(k), hint2);
+    var fac3 = factorial(new Decimal(k), hint3);
+    var denom = fac2.times(fac3.pow(3)).times(new Decimal(-640320).pow(new Decimal(3).times(k)));
     result = result.plus(numer.div(denom));
     k++;
   }
-  return result;
+  return {data: result, hints: [{input: 6 * k, output: fac1}, {input: 3 * k, output: fac2}, {input: k, output: fac3}]};
 }
 
 // This is the main method of this 'class'
@@ -93,7 +106,7 @@ var getWork = function() {
       self.close();
     } else {
       var result = chudnovsky(currentJob.params.lo, currentJob.params.hi, currentJob.params.precis);
-      ajax("/work", {data: result, id: currentJob.id}, function(data) {
+      ajax("/work", {data: result.data, id: currentJob.id}, function(data) {
         // console.log('successful post!');
         getWork();
       }, 'POST');
