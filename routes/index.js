@@ -14,10 +14,10 @@ function verify(calculatedPi) {
 
 // Setup step
 var num = 0;
-var max = 205; // number of iterations
+var max = 100; // number of iterations
 var DIGITS_PER_ITERATION  = 14.1816474627254776555
 var precision = Math.floor(max * DIGITS_PER_ITERATION); // number of places to calculate for
-var increment = 5;
+var increment = 1;
 var startTime = null;
 var endTime = null;
 var result = {};
@@ -27,6 +27,20 @@ var pi = new Decimal(0);
 Decimal.config({ precision: precision, rounding: 4 });
 // The Dictionary used to keep track of active jobs
 var jobs = {};
+
+function getAppropriateFactorials(num1, num2, num3) {
+	var greatestKeyNum1 = 1;
+	var greatestKeyNum2 = 1;
+	var greatestKeyNum3 = 1;
+	if(Object.keys(factorialStore).length == 0) 
+		return [{iteration: 1, result: 1}, {iteration: 1, result: 1}, {iteration: 1, result: 1}];
+	for(var i = 0; i < Object.keys(factorialStore).length; i++) {
+		if (Object.keys(factorialStore)[i] <= num1 && Object.keys(factorialStore)[i] > greatestKeyNum1) greatestKeyNum1 = Object.keys(factorialStore)[i];
+		if (Object.keys(factorialStore)[i] <= num2 && Object.keys(factorialStore)[i] > greatestKeyNum2) greatestKeyNum2 = Object.keys(factorialStore)[i];
+		if (Object.keys(factorialStore)[i] <= num3 && Object.keys(factorialStore)[i] > greatestKeyNum3) greatestKeyNum3 = Object.keys(factorialStore)[i];
+	}
+	return [{iteration: greatestKeyNum1, result: factorialStore[greatestKeyNum1]}, {iteration: greatestKeyNum2, result: factorialStore[greatestKeyNum2]}, {iteration: greatestKeyNum3, result: factorialStore[greatestKeyNum3]}];
+}
 
 /* GET home page. THIS DOES NOTHING*/
 router.get('/', function(req, res, next) {
@@ -56,7 +70,9 @@ router.get('/work', function(req, res, next) {
 	if (num < max) {
 		var progress = Math.round(100 * num / max) - Object.keys(jobs).length;
     	res.setHeader('Content-Type', 'application/json');
-    	var job = JSON.stringify({isComplete: false, id: num, progress: progress, params: {lo: num, hi: num + increment, precis: precision}, hints: [{iteration: 1, result: 1}, {iteration: 1, result: 1}, {iteration: 1, result: 1}]});
+    	var hints = getAppropriateFactorials(num * 6, num * 3, num);
+    	console.log("sending hints" + hints);
+    	var job = JSON.stringify({isComplete: false, id: num, progress: progress, params: {lo: num, hi: num + increment, precis: precision}, hints: hints});
     	res.send(job);
 		jobs[num+""] = job;
 		num += increment;
@@ -90,12 +106,14 @@ router.post('/work', function(req, res, next) {
 		// Deletes the job from the job dictionary when completing the calculation
 		delete jobs[jobId+""];
 		// This is the REDUCE step
+		hints=JSON.parse(req.body.hints);
+		console.log('OUTPUT: ' + hints);
 		var result = new Decimal(req.body.data);
 		// Look through each hint given
 		if(req.body.hints) {
-			for(var i = 0; i < req.body.hints.length; i++) {
-				console.log(req.body.hints[i].iteration);
-				factorialStore[req.body.hints[i].iteration] = req.body.hints[i].result;
+			for(var i = 0; i < hints.length; i++) {
+				console.log(hints[i].result);
+				factorialStore[hints[i].iteration] = decodeURIComponent(hints[i].result);
 			}
 		}
 		pi = pi.plus(result);

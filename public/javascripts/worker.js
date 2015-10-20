@@ -67,9 +67,13 @@ function factorial(base, hint) {
     lo = 1;
   }
   // Start at 1 because multiplying by 0 is not good
-  for(var i = lo; i <= base; i++) {
+  // lo + 1 because otherwise it would be 3! * 3 * 4 * 5 * 6
+  var multiplications = "";
+  for(var i = lo + 1; i <= base; i++) {
     result = result.times(i);
+    multiplications += "*" + i;
   }
+  console.log(base + '! is ' + result + ' using ' + hint.iteration + '!=' + hint.result + ' as inspiration AND ' + hint.result + multiplications);
   return result;
 }
 
@@ -94,7 +98,8 @@ function chudnovsky(lo, hi, precis, hints) {
     result = result.plus(numer.div(denom));
     k++;
   }
-  return {result: result, hints: [{iteration: 6 * k, result: fac1}, {iteration: 3 * k, result: fac2}, {iteration: k, result: fac3}]};
+  // k - 1 because it ends on the step where k is 1 greater than the associated factorial results
+  return {'result': result, hints: JSON.stringify([{'iteration': 6 * (k - 1), 'result': encodeURIComponent(fac1.toPrecision())}, {'iteration': 3 * (k - 1), 'result': encodeURIComponent(fac2.toPrecision())}, {'iteration': (k - 1), 'result': encodeURIComponent(fac3.toPrecision())}])};
 }
 
 // This is the main method of this 'class'
@@ -111,7 +116,8 @@ var getWork = function() {
       self.close();
     } else {
       var result = chudnovsky(currentJob.params.lo, currentJob.params.hi, currentJob.params.precis, currentJob.hints);
-      ajax("/work", {data: result.result, hints: result.hints, id: currentJob.id}, function(data) {
+      console.log('RESULT: ' + result.hints);
+      ajax("/work", {'data': result.result, 'hints': result.hints, 'id': currentJob.id}, function(data) {
         // console.log('successful post!');
         getWork();
       }, 'POST');
