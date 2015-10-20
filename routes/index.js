@@ -14,13 +14,14 @@ function verify(calculatedPi) {
 
 // Setup step
 var num = 0;
-var max = 705; // number of iterations
+var max = 205; // number of iterations
 var DIGITS_PER_ITERATION  = 14.1816474627254776555
 var precision = Math.floor(max * DIGITS_PER_ITERATION); // number of places to calculate for
 var increment = 5;
 var startTime = null;
 var endTime = null;
 var result = {};
+var factorialStore = {};
 // Pi starts at 0
 var pi = new Decimal(0);
 Decimal.config({ precision: precision, rounding: 4 });
@@ -55,7 +56,7 @@ router.get('/work', function(req, res, next) {
 	if (num < max) {
 		var progress = Math.round(100 * num / max) - Object.keys(jobs).length;
     	res.setHeader('Content-Type', 'application/json');
-    	var job = JSON.stringify({isComplete: false, id: num, progress: progress, params: {lo: num, hi: num + increment, precis: precision}});
+    	var job = JSON.stringify({isComplete: false, id: num, progress: progress, params: {lo: num, hi: num + increment, precis: precision}, hints: [{iteration: 1, result: 1}, {iteration: 1, result: 1}, {iteration: 1, result: 1}]});
     	res.send(job);
 		jobs[num+""] = job;
 		num += increment;
@@ -75,6 +76,7 @@ router.get('/work', function(req, res, next) {
 			console.log("RESULT: " + result.result);
 			console.log("Correct digits: " + result.digits);
 			console.log("Time: " + (result.time));
+			console.log("FactorialStore: " + JSON.stringify(factorialStore));
 		}
 		res.setHeader('Content-Type', 'application/json');
     	res.send(JSON.stringify({isComplete: true, progress: 100, result: result}));
@@ -89,6 +91,13 @@ router.post('/work', function(req, res, next) {
 		delete jobs[jobId+""];
 		// This is the REDUCE step
 		var result = new Decimal(req.body.data);
+		// Look through each hint given
+		if(req.body.hints) {
+			for(var i = 0; i < req.body.hints.length; i++) {
+				console.log(req.body.hints[i].iteration);
+				factorialStore[req.body.hints[i].iteration] = req.body.hints[i].result;
+			}
+		}
 		pi = pi.plus(result);
 		res.send(200);
 	}

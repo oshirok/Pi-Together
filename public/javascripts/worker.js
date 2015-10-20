@@ -60,8 +60,9 @@ function factorial(base, hint) {
   var lo;
   var result = new Decimal(1);
   if(hint && hint.iteration < base) {
+    console.log("I USED HINT, starting with " + hint.result + " at iteration " + hint.iteration);
     lo = hint.iteration;
-    result = new Decimal(hint.data);
+    result = new Decimal(hint.result);
   } else {
     lo = 1;
   }
@@ -79,8 +80,11 @@ function chudnovsky(lo, hi, precis, hints) {
   var result = new Decimal(0);
   var k =　lo;
   var hint1 = null;
+  if(hints && hints[0]) hint1 = hints[0];
   var hint2 = null;
+  if(hints && hints[1]) hint2 = hints[1];
   var hint3 = null;
+  if(hints && hints[2]) hint3 = hints[2];
   while(k < hi) {
     var fac1 = factorial(new Decimal(6).times(k), hint1);
     var numer = fac1.times(new Decimal(13591409).plus(new Decimal(545140134).times(k)));
@@ -90,7 +94,7 @@ function chudnovsky(lo, hi, precis, hints) {
     result = result.plus(numer.div(denom));
     k++;
   }
-  return {data: result, hints: [{input: 6 * k, output: fac1}, {input: 3 * k, output: fac2}, {input: k, output: fac3}]};
+  return {result: result, hints: [{iteration: 6 * k, result: fac1}, {iteration: 3 * k, result: fac2}, {iteration: k, result: fac3}]};
 }
 
 // This is the main method of this 'class'
@@ -100,13 +104,14 @@ var getWork = function() {
   ajax("/work", null, function(data) {
     //do something with the data like:
     var currentJob = JSON.parse(data);
+    console.log(currentJob);
     self.postMessage({'progress': currentJob.progress});
     if(currentJob.isComplete) {
       self.postMessage({'result': currentJob.result});
       self.close();
     } else {
-      var result = chudnovsky(currentJob.params.lo, currentJob.params.hi, currentJob.params.precis);
-      ajax("/work", {data: result.data, id: currentJob.id}, function(data) {
+      var result = chudnovsky(currentJob.params.lo, currentJob.params.hi, currentJob.params.precis, currentJob.hints);
+      ajax("/work", {data: result.result, hints: result.hints, id: currentJob.id}, function(data) {
         // console.log('successful post!');
         getWork();
       }, 'POST');
