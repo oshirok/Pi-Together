@@ -59,9 +59,10 @@ function ballard(lo, hi, precis) {
 function factorial(base, hint) {
   var lo;
   var result = new Decimal(1);
-  if(hint && hint.iteration < base) {
+  if(hint && hint.iteration <= base && hint.result && hint.iteration) {
     console.log("I USED HINT, starting with " + hint.result + " at iteration " + hint.iteration);
-    lo = hint.iteration;
+    // need parseInt or it will cause inexplicable behavior
+    lo = parseInt(hint.iteration) + 1;
     result = new Decimal(hint.result);
   } else {
     lo = 1;
@@ -69,9 +70,9 @@ function factorial(base, hint) {
   // Start at 1 because multiplying by 0 is not good
   // lo + 1 because otherwise it would be 3! * 3 * 4 * 5 * 6
   var multiplications = "";
-  for(var i = lo + 1; i <= base; i++) {
+  for(var i = lo; i <= base; i++) {
     result = result.times(i);
-    multiplications += "*" + i;
+    multiplications += "*" + i + ' = ' + result;
   }
   console.log(base + '! is ' + result + ' using ' + hint.iteration + '!=' + hint.result + ' as inspiration AND ' + hint.result + multiplications);
   return result;
@@ -109,14 +110,14 @@ var getWork = function() {
   ajax("/work", null, function(data) {
     //do something with the data like:
     var currentJob = JSON.parse(data);
-    console.log(currentJob);
+    // console.log(currentJob);
     self.postMessage({'progress': currentJob.progress});
     if(currentJob.isComplete) {
       self.postMessage({'result': currentJob.result});
       self.close();
     } else {
       var result = chudnovsky(currentJob.params.lo, currentJob.params.hi, currentJob.params.precis, currentJob.hints);
-      console.log('RESULT: ' + result.hints);
+      // console.log('RESULT: ' + result.hints);
       ajax("/work", {'data': result.result, 'hints': result.hints, 'id': currentJob.id}, function(data) {
         // console.log('successful post!');
         getWork();

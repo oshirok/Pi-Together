@@ -14,14 +14,15 @@ function verify(calculatedPi) {
 
 // Setup step
 var num = 0;
-var max = 100; // number of iterations
+var max = 1410; // number of iterations
 var DIGITS_PER_ITERATION  = 14.1816474627254776555
 var precision = Math.floor(max * DIGITS_PER_ITERATION); // number of places to calculate for
-var increment = 1;
+var increment = 5;
 var startTime = null;
 var endTime = null;
 var result = {};
 var factorialStore = {};
+var factorialStoreKeys = [];
 // Pi starts at 0
 var pi = new Decimal(0);
 Decimal.config({ precision: precision, rounding: 4 });
@@ -29,16 +30,23 @@ Decimal.config({ precision: precision, rounding: 4 });
 var jobs = {};
 
 function getAppropriateFactorials(num1, num2, num3) {
+	var start = new Date();
 	var greatestKeyNum1 = 1;
 	var greatestKeyNum2 = 1;
 	var greatestKeyNum3 = 1;
-	if(Object.keys(factorialStore).length == 0) 
+	// Copy the current keys to avoid race condition
+	var keys = factorialStoreKeys.slice(0);
+	var end1 = new Date();
+	if(keys.length == 0) 
 		return [{iteration: 1, result: 1}, {iteration: 1, result: 1}, {iteration: 1, result: 1}];
-	for(var i = 0; i < Object.keys(factorialStore).length; i++) {
-		if (Object.keys(factorialStore)[i] <= num1 && Object.keys(factorialStore)[i] > greatestKeyNum1) greatestKeyNum1 = Object.keys(factorialStore)[i];
-		if (Object.keys(factorialStore)[i] <= num2 && Object.keys(factorialStore)[i] > greatestKeyNum2) greatestKeyNum2 = Object.keys(factorialStore)[i];
-		if (Object.keys(factorialStore)[i] <= num3 && Object.keys(factorialStore)[i] > greatestKeyNum3) greatestKeyNum3 = Object.keys(factorialStore)[i];
+	// this loop takes a long time to execute...
+	for(var i = 0; i < keys.length; i++) {
+		if (keys[i] <= num1 && keys[i] > greatestKeyNum1) greatestKeyNum1 = keys[i];
+		if (keys[i] <= num2 && keys[i] > greatestKeyNum2) greatestKeyNum2 = keys[i];
+		if (keys[i] <= num3 && keys[i] > greatestKeyNum3) greatestKeyNum3 = keys[i];
 	}
+	var end = new Date();
+	console.log('FINDING THE APPROPRIATE FACTORIAL TOO ' + (end - start) + ' MILLISECONDS, SLICE TOOK ' + (end1 - start) + ' MILLISECONDS AND LOOP TOOK ' + (end - end1) + ' MILLISECONDS');
 	return [{iteration: greatestKeyNum1, result: factorialStore[greatestKeyNum1]}, {iteration: greatestKeyNum2, result: factorialStore[greatestKeyNum2]}, {iteration: greatestKeyNum3, result: factorialStore[greatestKeyNum3]}];
 }
 
@@ -112,8 +120,9 @@ router.post('/work', function(req, res, next) {
 		// Look through each hint given
 		if(req.body.hints) {
 			for(var i = 0; i < hints.length; i++) {
-				console.log(hints[i].result);
+				console.log("HINTS RECIEVED!!! CURRENT HINTS SIZE: " + factorialStoreKeys.length);
 				factorialStore[hints[i].iteration] = decodeURIComponent(hints[i].result);
+				factorialStoreKeys.push(hints[i].iteration);
 			}
 		}
 		pi = pi.plus(result);
