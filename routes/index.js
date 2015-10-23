@@ -62,6 +62,8 @@ router.get('/reset', function(req, res, next) {
 	startTime = null;
 	endTime = null;
 	result = {};
+	factorialStore = {};
+	factorialStoreKeys = [];
 	pi = new Decimal(0);
 	res.send('ok!');
 });
