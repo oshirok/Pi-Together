@@ -28,6 +28,7 @@ var pi = new Decimal(0);
 Decimal.config({ precision: precision, rounding: 4 });
 // The Dictionary used to keep track of active jobs
 var jobs = {};
+var results = {};
 
 function getAppropriateFactorials(num1, num2, num3) {
 	var start = new Date();
@@ -112,23 +113,28 @@ router.get('/work', function(req, res, next) {
 // Processes and reduces the result of a calculation
 router.post('/work', function(req, res, next) {
 	var jobId = req.body.id;
-	if(jobs[jobId+""]) {
+	var jobType = req.body.type;
+	if(jobs[jobId+""] && jobType == "MAP") {
 		// Deletes the job from the job dictionary when completing the calculation
 		delete jobs[jobId+""];
 		// This is the REDUCE step
 		hints=JSON.parse(req.body.hints);
 		console.log('OUTPUT: ' + hints);
 		var result = new Decimal(req.body.data);
-		// Look through each hint given
-		if(req.body.hints) {
-			for(var i = 0; i < hints.length; i++) {
-				console.log("HINTS RECIEVED!!! CURRENT HINTS SIZE: " + factorialStoreKeys.length);
-				factorialStore[hints[i].iteration] = decodeURIComponent(hints[i].result);
-				factorialStoreKeys.push(hints[i].iteration);
-			}
-		}
+		results[jobId+""] = result;
 		pi = pi.plus(result);
 		res.send(200);
+	} else if (jobs[jobId+""] && jobType == "REDUCE") {
+		var associatedResults = req.body.associatedResults;
+		for (var i = 0; i < associatedResults.length; i++) {
+			// Should also check that the result exists
+			delete results[resultId+""]
+		}
+
+		// Construct a new result
+		var result = req.body.data;
+		results[getNewResultId()] = result;   
+	}
 	}
 });
 
