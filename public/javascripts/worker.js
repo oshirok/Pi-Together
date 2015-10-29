@@ -56,17 +56,10 @@ function ballard(lo, hi, precis) {
 }
 
 // We can optimize this further I think
-function factorial(base, hint) {
+function factorial(base) {
   var lo;
   var result = new Decimal(1);
-  if(hint && hint.iteration <= base && hint.result && hint.iteration) {
-    console.log("I USED HINT, starting with " + hint.result + " at iteration " + hint.iteration);
-    // need parseInt or it will cause inexplicable behavior
-    lo = parseInt(hint.iteration) + 1;
-    result = new Decimal(hint.result);
-  } else {
-    lo = 1;
-  }
+  lo = 1;
   // Start at 1 because multiplying by 0 is not good
   // lo + 1 because otherwise it would be 3! * 3 * 4 * 5 * 6
   var multiplications = "";
@@ -74,33 +67,26 @@ function factorial(base, hint) {
     result = result.times(i);
     multiplications += "*" + i + ' = ' + result;
   }
-  console.log(base + '! is ' + result + ' using ' + hint.iteration + '!=' + hint.result + ' as inspiration AND ' + hint.result + multiplications);
   return result;
 }
 
 // This only takes care of the summation step of Chudnovsky's formula
 // It is comparitively faster at calculating Pi than Bellard's formula
-function chudnovsky(lo, hi, precis, hints) {
+function chudnovsky(lo, hi, precis) {
   Decimal.config({ precision: precis, rounding: 4 });
   var result = new Decimal(0);
   var k =　lo;
-  var hint1 = null;
-  if(hints && hints[0]) hint1 = hints[0];
-  var hint2 = null;
-  if(hints && hints[1]) hint2 = hints[1];
-  var hint3 = null;
-  if(hints && hints[2]) hint3 = hints[2];
   while(k < hi) {
-    var fac1 = factorial(new Decimal(6).times(k), hint1);
+    var fac1 = factorial(new Decimal(6).times(k));
     var numer = fac1.times(new Decimal(13591409).plus(new Decimal(545140134).times(k)));
-    var fac2 = factorial(new Decimal(3).times(k), hint2);
-    var fac3 = factorial(new Decimal(k), hint3);
+    var fac2 = factorial(new Decimal(3).times(k));
+    var fac3 = factorial(new Decimal(k));
     var denom = fac2.times(fac3.pow(3)).times(new Decimal(-640320).pow(new Decimal(3).times(k)));
     result = result.plus(numer.div(denom));
     k++;
   }
   // k - 1 because it ends on the step where k is 1 greater than the associated factorial results
-  return {'result': result, hints: JSON.stringify([{'iteration': 6 * (k - 1), 'result': encodeURIComponent(fac1.toPrecision())}, {'iteration': 3 * (k - 1), 'result': encodeURIComponent(fac2.toPrecision())}, {'iteration': (k - 1), 'result': encodeURIComponent(fac3.toPrecision())}])};
+  return {'result': result};
 }
 
 // This is the main method of this 'class'
@@ -115,14 +101,23 @@ var getWork = function() {
     if(currentJob.isComplete) {
       self.postMessage({'result': currentJob.result});
       self.close();
-    } else {
-      var result = chudnovsky(currentJob.params.lo, currentJob.params.hi, currentJob.params.precis, currentJob.hints);
+    } else if (currentJob.type == 'MAP') {
+      var result = chudnovsky(currentJob.params.lo, currentJob.params.hi, currentJob.params.precis);
       // console.log('RESULT: ' + result.hints);
-      ajax("/work", {'data': result.result, 'hints': result.hints, 'id': currentJob.id}, function(data) {
+      ajax("/work", {'type': 'MAP', 'data': result.result, 'id': currentJob.id}, function(data) {
         // console.log('successful post!');
         getWork();
       }, 'POST');
-
+    } else if (currentJob.type == 'REDUCE') {
+      var result = new Decimal(0);
+      var results = JSON.parse(currentJob.results);
+      for (var i = 0; i < results.length; i++) {
+        result = result.plus(new Decimal(results[i]));
+      }
+      ajax("/work", {'type': 'REDUCE', 'data': result, 'id': currentJob.id}, function(data) {
+        // console.log('successful post!');
+        getWork();
+      }, 'POST');
     }
   }, 'GET');
 }
