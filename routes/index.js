@@ -15,6 +15,7 @@ Decimal.config({ precision: precision, rounding: 4 });
 // The Dictionary used to keep track of active jobs
 var jobs = {};
 var results = {};
+var resultsKeys = [];
 var newestJobId = 0;
 
 // We must make this method synchronus so it does not run into race conditions
@@ -36,6 +37,7 @@ router.get('/reset', function(req, res, next) {
 	startTime = null;
 	endTime = null;
 	results = {};
+	resultsKeys = [];
 	res.send('ok!');
 });
 
@@ -52,6 +54,10 @@ router.get('/work', function(req, res, next) {
 		// Construct a reduce job
     	res.setHeader('Content-Type', 'application/json');
     	var jobId = generateJobId();
+    	var resultsToSend = [];
+    	for (var i = 0; i < 4; i++) {
+    		results.push();
+    	}
     	var job = JSON.stringify({isComplete: false, type: 'REDUCE', id: jobId, progress: progress, params: {lo: num, hi: num + increment, precis: precision}});
     	res.send(job);
 		jobs[jobId+""] = job;
@@ -102,7 +108,9 @@ router.post('/work', function(req, res, next) {
 		}
 		// Construct a new result
 		var result = req.body.data;
-		results[generateJobId()+""] = result;
+		var resultsJobId = generateJobId();
+		results[resultsJobId+""] = result;
+		resultsKeys.push(resultsJobId+"");
 		res.send(200);   
 	}
 });
