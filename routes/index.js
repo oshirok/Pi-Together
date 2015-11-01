@@ -98,12 +98,6 @@ router.get('/work', function(req, res, next) {
     	res.send(job);
 		jobs[jobId+""] = job;
 	} else {
-		if (!endTime) {
-			endTime = new Date();
-			var time = endTime - startTime;
-			console.log("RESULT: " + JSON.stringify(results));
-			console.log("Time: " + (time));
-		}
 		res.setHeader('Content-Type', 'application/json');
     	res.send(JSON.stringify({isComplete: true, progress: 100, result: result}));
 	}
@@ -132,10 +126,17 @@ router.post('/work', function(req, res, next) {
 		console.log("created result " + jobId);
 		res.send(200);   
 	} else if (jobs[jobId+""] && jobType == "FINALLY") {
+		// we can guarantee that this code only runs once
+		endTime = new Date();
 		delete jobs[jobId+""];
 		// Construct a new result
+		console.log("WE HAVE HIT THIS POINT" + req.body.data.finalResult);
 		var finalResult = new Decimal(req.body.data);
+		var accuracy = req.body.accuracy;
 		console.log("Pi is " + finalResult);
+		result.result = finalResult.toFixed(precision);
+		result.digits = accuracy;
+		result.time = endTime - startTime;
 		res.send(200);   
 	}
 });
