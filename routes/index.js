@@ -50,15 +50,20 @@ router.get('/worker', function(req, res, next) {
 //　Serves a JSON with the work parameters
 router.get('/work', function(req, res, next) {
 	if(!startTime) startTime = new Date();
-	if(Object.keys(results).length > 4) {
+	// If a REDUCE job is available, it is priority
+	if(resultsKeys.length > 4) {
 		// Construct a reduce job
     	res.setHeader('Content-Type', 'application/json');
     	var jobId = generateJobId();
     	var resultsToSend = [];
     	for (var i = 0; i < 4; i++) {
-    		results.push();
+    		var resultKey = resultsKeys.pop();
+    		resultsToSend.push(results[resultKey]);
+    		if(!results[resultKey]) console.log("CANNOT FIND JOB with ID: " + resultKey);
+    		delete results[resultKey];
+    		console.log("DELETED result " + resultKey);
     	}
-    	var job = JSON.stringify({isComplete: false, type: 'REDUCE', id: jobId, progress: progress, params: {lo: num, hi: num + increment, precis: precision}});
+    	var job = JSON.stringify({isComplete: false, type: 'REDUCE', id: jobId, progress: progress, results: resultsToSend});
     	res.send(job);
 		jobs[jobId+""] = job;
 	}
@@ -76,6 +81,22 @@ router.get('/work', function(req, res, next) {
   		// We must update the progress
   		res.setHeader('Content-Type', 'application/json');
   		res.send(job);
+	} else if (resultsKeys.length > 1){
+		// Construct a reduce job
+    	res.setHeader('Content-Type', 'application/json');
+    	var jobId = generateJobId();
+    	var resultsToSend = [];
+    	var finalLength = resultsKeys.length;
+    	// We must use an additional variable here because the length of the key will change with every
+    	// iteration of loop which causes it to get shorter than expected
+    	for (var i = 0; i < finalLength; i++) {
+    		var resultKey = resultsKeys.pop();
+    		resultsToSend.push(results[resultKey]);
+    		delete results[resultKey];
+    	}
+    	var job = JSON.stringify({isComplete: false, type: 'FINALLY', id: jobId, progress: progress, results: resultsToSend});
+    	res.send(job);
+		jobs[jobId+""] = job;
 	} else {
 		if (!endTime) {
 			endTime = new Date();
@@ -99,18 +120,22 @@ router.post('/work', function(req, res, next) {
 		var result = new Decimal(req.body.data);
 		// Store the result with the associated jobId
 		results[jobId+""] = result;
+		resultsKeys.push(jobId+"");
+		console.log("created result " + jobId);
 		res.send(200);
 	} else if (jobs[jobId+""] && jobType == "REDUCE") {
-		var associatedResults = req.body.associatedResults;
-		for (var i = 0; i < associatedResults.length; i++) {
-			// Should also check that the result exists
-			delete results[resultId+""];
-		}
+		delete jobs[jobId+""];
 		// Construct a new result
-		var result = req.body.data;
-		var resultsJobId = generateJobId();
-		results[resultsJobId+""] = result;
-		resultsKeys.push(resultsJobId+"");
+		var result = new Decimal(req.body.data);
+		results[jobId+""] = result;
+		resultsKeys.push(jobId+"");
+		console.log("created result " + jobId);
+		res.send(200);   
+	} else if (jobs[jobId+""] && jobType == "FINALLY") {
+		delete jobs[jobId+""];
+		// Construct a new result
+		var finalResult = new Decimal(req.body.data);
+		console.log("Pi is " + finalResult);
 		res.send(200);   
 	}
 });

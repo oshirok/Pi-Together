@@ -110,11 +110,22 @@ var getWork = function() {
       }, 'POST');
     } else if (currentJob.type == 'REDUCE') {
       var result = new Decimal(0);
-      var results = JSON.parse(currentJob.results);
+      var results = currentJob.results;
       for (var i = 0; i < results.length; i++) {
         result = result.plus(new Decimal(results[i]));
       }
       ajax("/work", {'type': 'REDUCE', 'data': result, 'id': currentJob.id}, function(data) {
+        // console.log('successful post!');
+        getWork();
+      }, 'POST');
+    } else if (currentJob.type == 'FINALLY') {
+      var result = new Decimal(0);
+      var results = currentJob.results;
+      for (var i = 0; i < results.length; i++) {
+        result = result.plus(new Decimal(results[i]));
+      }
+      var finalResult = new Decimal(426880).times(new Decimal(10005).sqrt()).div(result);
+      ajax("/work", {'type': 'FINALLY', 'data': finalResult, 'id': currentJob.id}, function(data) {
         // console.log('successful post!');
         getWork();
       }, 'POST');
