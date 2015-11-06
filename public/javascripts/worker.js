@@ -138,7 +138,7 @@ var getWork = function() {
       finalResult = new Decimal(426880).times(new Decimal(10005).sqrt()).div(result);
       accuracy = 0;//verify(finalResult.toString());
       console.log(finalResult.toString());
-      ajax("/work", JSON.stringify({'type': 'FINALLY', 'data': 0, 'accuracy': accuracy, 'id': currentJob.id}), function(data) {
+      ajax("/work", {'type': 'FINALLY', 'data': finalResult, 'accuracy': accuracy, 'id': currentJob.id}, function(data) {
         // console.log('successful post!');
         getWork();
       }, 'POST');

@@ -128,15 +128,15 @@ router.post('/work', function(req, res, next) {
 	} else if (jobs[jobId+""] && jobType == "FINALLY") {
 		// we can guarantee that this code only runs once
 		endTime = new Date();
+		console.log("WE HAVE HIT THIS POINT 1" + req.body.data);
 		delete jobs[jobId+""];
 		// Construct a new result
-		console.log("WE HAVE HIT THIS POINT" + req.body.data.finalResult);
-		var finalResult = new Decimal(req.body.data);
+		console.log("WE HAVE HIT THIS POINT" + req.body.data);
 		var accuracy = req.body.accuracy;
-		console.log("Pi is " + finalResult);
-		result.result = finalResult.toFixed(precision);
+		/*result.result = req.body.data;
 		result.digits = accuracy;
-		result.time = endTime - startTime;
+		result.time = endTime - startTime;*/
+		console.log("Pi is " + req.body.data);
 		res.send(200);   
 	}
 });
